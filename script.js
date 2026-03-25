@@ -1,429 +1,315 @@
-'use strict';
+/**
+ * script.js — Logika aplikacji
+ * Procedura potwierdzenia otrzymania wypowiedzenia
+ *
+ * Centralny stan + render functions.
+ * Brak inline eventów — wszystko podpinane tutaj.
+ */
 
-/* ─────────────────────────────────────────────────────────────
-   CENTRAL STATE
-   ───────────────────────────────────────────────────────────── */
+/* ═══════════════════════════════════════
+   State
+   ═══════════════════════════════════════ */
 const state = {
-  level1:   null,   // klucz z PROCEDURES
-  level2:   null,   // id z sublevel
-  caseType: null    // id z CASE_TYPES
+  selectedLevel1: null,       // "email" | "poczta" | "bok"
+  selectedOptionId: null,     // e.g. "poczta-telkom"
+  selectedContractType: null, // "zaleglosc" | "nadplata" | "zerwanie"
 };
 
-/* ─────────────────────────────────────────────────────────────
-   DOM HELPERS
-   ───────────────────────────────────────────────────────────── */
-const el = id => document.getElementById(id);
-
-function show(element) {
-  element.classList.remove('hidden');
-  element.classList.add('is-entering');
-  element.addEventListener('animationend', () => {
-    element.classList.remove('is-entering');
-  }, { once: true });
+/* Helper — get current option object from data */
+function getCurrentOption() {
+  if (!state.selectedLevel1 || !state.selectedOptionId) return null;
+  const proc = PROCEDURES[state.selectedLevel1];
+  if (!proc) return null;
+  return proc.options.find((o) => o.id === state.selectedOptionId) || null;
 }
 
-function hide(element) {
-  element.classList.add('hidden');
-  element.classList.remove('is-entering');
+/* ═══════════════════════════════════════
+   DOM refs (cached once on DOMContentLoaded)
+   ═══════════════════════════════════════ */
+let dom = {};
+
+function cacheDom() {
+  dom = {
+    level1Row: document.getElementById("level1-row"),
+    conn1: document.getElementById("conn1"),
+    level2Label: document.getElementById("level2-label"),
+    level2Row: document.getElementById("level2-row"),
+    conn2: document.getElementById("conn2"),
+    resultWrap: document.getElementById("result-wrap"),
+    resMethod: document.getElementById("res-method"),
+    resDeadline: document.getElementById("res-deadline"),
+    resDesc: document.getElementById("res-desc"),
+    stepsList: document.getElementById("steps-list"),
+    typeBtns: document.getElementById("type-btns"),
+    templateArea: document.getElementById("template-area"),
+    templateTitle: document.getElementById("template-title"),
+    templateContent: document.getElementById("template-content"),
+    copyBtn: document.getElementById("copy-btn"),
+    copyLabel: document.getElementById("copy-label"),
+    resetBtn: document.getElementById("reset-btn"),
+    resetWrap: document.getElementById("reset-wrap"),
+    liveRegion: document.getElementById("live-region"),
+  };
 }
 
-function setActive(container, activeId) {
-  container.querySelectorAll('[data-id]').forEach(card => {
-    const isActive = card.dataset.id === activeId;
-    card.classList.toggle('card--active', isActive);
-    card.setAttribute('aria-selected', String(isActive));
-  });
-}
+/* ═══════════════════════════════════════
+   Render functions
+   ═══════════════════════════════════════ */
 
-function smoothScrollTo(element) {
-  setTimeout(() => {
-    const offset = 24;
-    const top = element.getBoundingClientRect().top + window.pageYOffset - offset;
-    window.scrollTo({ top, behavior: 'smooth' });
-  }, 60);
-}
-
-function escapeHtml(str) {
-  return str
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;');
-}
-
-/* ─────────────────────────────────────────────────────────────
-   RENDER — LEVEL 1 CARDS
-   ───────────────────────────────────────────────────────────── */
-function renderLevel1() {
-  const container = el('cards-level1');
-  container.innerHTML = '';
-
-  Object.values(PROCEDURES).forEach(proc => {
-    const btn = document.createElement('button');
-    btn.type = 'button';
-    btn.className = `card card--l1 card--ch-${proc.channel}`;
-    btn.dataset.id = proc.id;
-    btn.setAttribute('role', 'option');
-    btn.setAttribute('aria-selected', 'false');
-    btn.innerHTML = `
-      <span class="card-dot card-dot--${proc.channel}" aria-hidden="true"></span>
-      <span class="card-body">
-        <span class="card-title">${proc.label}</span>
-        <span class="card-desc">${proc.description}</span>
-      </span>
-      <svg class="card-chevron" width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
-        <path d="M6 3l5 5-5 5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
-      </svg>`;
-    btn.addEventListener('click', () => onLevel1Select(proc.id));
-    container.appendChild(btn);
-  });
-}
-
-/* ─────────────────────────────────────────────────────────────
-   HANDLER — LEVEL 1
-   ───────────────────────────────────────────────────────────── */
-function onLevel1Select(id) {
-  state.level1   = id;
-  state.level2   = null;
-  state.caseType = null;
-
-  setActive(el('cards-level1'), id);
-  hide(el('section-result'));
-  hide(el('section-cases'));
-  hide(el('section-template'));
-
-  renderLevel2(id);
-  show(el('section-step2'));
-  smoothScrollTo(el('section-step2'));
-  showResetBar();
-}
-
-/* ─────────────────────────────────────────────────────────────
-   RENDER — LEVEL 2 CARDS
-   ───────────────────────────────────────────────────────────── */
-function renderLevel2(level1Id) {
-  const proc = PROCEDURES[level1Id];
-  const container = el('cards-level2');
-  container.innerHTML = '';
-
-  proc.sublevel.forEach(sub => {
-    const btn = document.createElement('button');
-    btn.type = 'button';
-    btn.className = `card card--l2 card--ch-${proc.channel}`;
-    btn.dataset.id = sub.id;
-    btn.setAttribute('role', 'option');
-    btn.setAttribute('aria-selected', 'false');
-    btn.innerHTML = `
-      <span class="card-dot card-dot--${proc.channel} card-dot--sm" aria-hidden="true"></span>
-      <span class="card-body">
-        <span class="card-title">${sub.label}</span>
-      </span>
-      <svg class="card-chevron" width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
-        <path d="M6 3l5 5-5 5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
-      </svg>`;
-    btn.addEventListener('click', () => onLevel2Select(sub.id));
-    container.appendChild(btn);
-  });
-}
-
-/* ─────────────────────────────────────────────────────────────
-   HANDLER — LEVEL 2
-   ───────────────────────────────────────────────────────────── */
-function onLevel2Select(id) {
-  state.level2   = id;
-  state.caseType = null;
-
-  const proc = PROCEDURES[state.level1];
-  const sub  = proc.sublevel.find(s => s.id === id);
-
-  setActive(el('cards-level2'), id);
-  hide(el('section-cases'));
-  hide(el('section-template'));
-
-  renderResult(sub.result);
-  show(el('section-result'));
-  smoothScrollTo(el('section-result'));
-
-  renderCaseTypes(sub.result);
-  show(el('section-cases'));
-}
-
-/* ─────────────────────────────────────────────────────────────
-   RENDER — RESULT PANEL
-   ───────────────────────────────────────────────────────────── */
-function renderResult(result) {
-  const panel  = el('result-panel');
-  const chMeta = CHANNEL_META[result.channel];
-
-  const stepsHTML = result.steps.map(step => `
-    <li class="proc-step ${step.important ? 'proc-step--important' : ''}">
-      <span class="proc-step-num" aria-hidden="true">${step.n}</span>
-      <span class="proc-step-text">${step.text}</span>
-      ${step.important
-        ? '<span class="proc-step-flag" aria-label="Ważny krok">!</span>'
-        : ''}
-    </li>`).join('');
-
-  panel.className = `result-card result-card--${result.channel}`;
-  panel.innerHTML = `
-    <div class="result-top">
-      <span class="result-badge result-badge--${result.channel}">${chMeta.label}</span>
-      <h2 class="result-title">${result.title}</h2>
-    </div>
-    <div class="result-meta-row">
-      <div class="meta-box">
-        <span class="meta-box-label">Kanał</span>
-        <span class="meta-box-val">${chMeta.label}</span>
-      </div>
-      <div class="meta-box">
-        <span class="meta-box-label">Termin procedury</span>
-        <span class="meta-box-val">${result.deadline}</span>
-      </div>
-      <div class="meta-box">
-        <span class="meta-box-label">Status</span>
-        <span class="meta-box-val ${result.statusClass}">${result.status}</span>
-      </div>
-    </div>
-    <div class="result-desc">
-      <p>${result.description}</p>
-    </div>
-    <div class="result-steps-section">
-      <h3 class="steps-heading">Kroki procedury</h3>
-      <ol class="proc-steps-list">
-        ${stepsHTML}
-      </ol>
-    </div>`;
-}
-
-/* ─────────────────────────────────────────────────────────────
-   RENDER — CASE TYPE CARDS
-   ───────────────────────────────────────────────────────────── */
-function renderCaseTypes(result) {
-  const container = el('cards-cases');
-  container.innerHTML = '';
-
-  CASE_TYPES.forEach(ct => {
-    const btn = document.createElement('button');
-    btn.type = 'button';
-    btn.className = 'card card--case';
-    btn.dataset.id = ct.id;
-    btn.setAttribute('role', 'option');
-    btn.setAttribute('aria-selected', 'false');
-    btn.innerHTML = `
-      <span class="case-icon" aria-hidden="true">${ct.icon}</span>
-      <span class="card-title">${ct.label}</span>`;
-    btn.addEventListener('click', () => onCaseTypeSelect(ct.id, result));
-    container.appendChild(btn);
-  });
-}
-
-/* ─────────────────────────────────────────────────────────────
-   HANDLER — CASE TYPE
-   ───────────────────────────────────────────────────────────── */
-function onCaseTypeSelect(caseTypeId, result) {
-  state.caseType = caseTypeId;
-  setActive(el('cards-cases'), caseTypeId);
-
-  renderTemplate(result.templateChannel, caseTypeId);
-  show(el('section-template'));
-  smoothScrollTo(el('section-template'));
-}
-
-/* ─────────────────────────────────────────────────────────────
-   RENDER — MESSAGE TEMPLATE
-   ───────────────────────────────────────────────────────────── */
-function renderTemplate(templateChannel, caseTypeId) {
-  const panel = el('template-panel');
-
-  if (!templateChannel || !MESSAGE_TEMPLATES[templateChannel]) {
-    renderNoTemplate(panel);
-    return;
+/** Clear everything below a given level */
+function resetFrom(level) {
+  if (level <= 1) {
+    state.selectedLevel1 = null;
+    setAllPressed(dom.level1Row, null);
   }
-
-  const tplGroup = MESSAGE_TEMPLATES[templateChannel];
-  const tpl      = tplGroup[caseTypeId];
-
-  if (!tpl) {
-    renderNoTemplate(panel);
-    return;
+  if (level <= 2) {
+    state.selectedOptionId = null;
+    hide(dom.conn1);
+    hide(dom.level2Label);
+    hide(dom.level2Row);
+    dom.level2Row.innerHTML = "";
   }
-
-  const chMeta = CHANNEL_META[templateChannel];
-
-  panel.innerHTML = `
-    <div class="tpl-card">
-      <div class="tpl-header">
-        <div class="tpl-header-left">
-          <span class="tpl-label">Szablon wiadomości</span>
-          <span class="tpl-ch-badge tpl-ch-badge--${templateChannel}">
-            ${chMeta ? chMeta.label : templateChannel}
-          </span>
-        </div>
-        <button type="button" class="btn-copy" id="btn-copy" aria-live="polite">
-          <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
-            <rect x="4" y="4" width="8" height="8" rx="1.2" stroke="currentColor" stroke-width="1.4"/>
-            <path d="M2 10H1.5A1.5 1.5 0 0 1 0 8.5V1.5A1.5 1.5 0 0 1 1.5 0H8.5A1.5 1.5 0 0 1 10 1.5V2" stroke="currentColor" stroke-width="1.4"/>
-          </svg>
-          Kopiuj treść
-        </button>
-      </div>
-      <div class="tpl-subject">
-        <span class="tpl-field-label">Temat:</span>
-        <span class="tpl-subject-text">${escapeHtml(tpl.subject)}</span>
-      </div>
-      <div class="tpl-body-wrap">
-        <pre class="tpl-body" id="tpl-body-text">${escapeHtml(tpl.body)}</pre>
-      </div>
-      <div class="tpl-footer">
-        <svg width="13" height="13" viewBox="0 0 13 13" fill="none" aria-hidden="true">
-          <circle cx="6.5" cy="6.5" r="5.5" stroke="currentColor" stroke-width="1.2"/>
-          <path d="M6.5 4.5v3" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
-          <circle cx="6.5" cy="9" r="0.8" fill="currentColor"/>
-        </svg>
-        <span>Pola w nawiasach <strong>[ ]</strong> należy uzupełnić przed wysyłką</span>
-      </div>
-    </div>`;
+  if (level <= 3) {
+    state.selectedContractType = null;
+    hide(dom.conn2);
+    hide(dom.resultWrap);
+  }
+  hide(dom.templateArea);
+  updateResetVisibility();
 }
 
-function renderNoTemplate(panel) {
-  const proc    = PROCEDURES[state.level1];
-  const chLabel = proc ? CHANNEL_META[proc.channel].label : 'ta ścieżka';
+function renderLevel2() {
+  const proc = PROCEDURES[state.selectedLevel1];
+  if (!proc) return;
 
-  panel.innerHTML = `
-    <div class="tpl-card tpl-card--empty">
-      <div class="no-tpl-icon" aria-hidden="true">
-        <svg width="40" height="40" viewBox="0 0 40 40" fill="none">
-          <circle cx="20" cy="20" r="18" stroke="currentColor" stroke-width="1.5" opacity="0.3"/>
-          <path d="M20 12v9" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/>
-          <circle cx="20" cy="26.5" r="2" fill="currentColor" opacity="0.7"/>
-        </svg>
-      </div>
-      <h3 class="no-tpl-title">Brak szablonu elektronicznego</h3>
-      <p class="no-tpl-desc">
-        Ścieżka <strong>${chLabel}</strong> nie posiada gotowego szablonu wiadomości e-mail.
-        Korespondencja w tej ścieżce odbywa się wyłącznie w formie papierowej lub zgodnie
-        z wewnętrzną procedurą działu prawnego.
-      </p>
-      <div class="no-tpl-note">
-        <svg width="15" height="15" viewBox="0 0 15 15" fill="none" aria-hidden="true" style="flex-shrink:0;margin-top:1px">
-          <circle cx="7.5" cy="7.5" r="6.5" stroke="currentColor" stroke-width="1.3"/>
-          <path d="M7.5 5v4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
-          <circle cx="7.5" cy="11" r="0.9" fill="currentColor"/>
-        </svg>
-        <span>Skorzystaj z dokumentów w zasobach wewnętrznych lub skontaktuj się z działem prawnym.</span>
-      </div>
-    </div>`;
+  /* Update level 1 pressed states */
+  setAllPressed(dom.level1Row, state.selectedLevel1);
+
+  /* Build level 2 cards */
+  dom.level2Row.innerHTML = "";
+  proc.options.forEach((opt) => {
+    const btn = document.createElement("button");
+    btn.className = `card ${opt.colorClass}`;
+    btn.type = "button";
+    btn.setAttribute("aria-pressed", "false");
+    btn.dataset.optionId = opt.id;
+    btn.innerHTML = `<span class="card__icon">${opt.icon}</span><span class="card__title">${opt.title}</span>`;
+    btn.addEventListener("click", () => handleLevel2Click(opt.id));
+    dom.level2Row.appendChild(btn);
+  });
+
+  show(dom.conn1);
+  show(dom.level2Label);
+  show(dom.level2Row);
+
+  /* Hide lower levels */
+  state.selectedOptionId = null;
+  state.selectedContractType = null;
+  hide(dom.conn2);
+  hide(dom.resultWrap);
+  hide(dom.templateArea);
+
+  updateResetVisibility();
 }
 
-/* ─────────────────────────────────────────────────────────────
-   COPY TEMPLATE — event delegation (survives re-renders)
-   ───────────────────────────────────────────────────────────── */
-document.addEventListener('click', e => {
-  if (e.target.closest('#btn-copy')) {
-    handleCopy();
-  }
-});
+function renderResult() {
+  const opt = getCurrentOption();
+  if (!opt) return;
 
-function handleCopy() {
-  const bodyEl = el('tpl-body-text');
-  const btn    = el('btn-copy');
-  if (!bodyEl || !btn) return;
+  /* Update level 2 pressed states */
+  setAllPressed(dom.level2Row, state.selectedOptionId);
 
-  const text = bodyEl.textContent;
+  /* Fill meta */
+  setText(dom.resMethod, opt.methodLabel);
+  setText(dom.resDeadline, opt.deadline);
+  setText(dom.resDesc, opt.description);
 
-  const doSuccess = () => setCopySuccess(btn);
+  /* Fill steps */
+  dom.stepsList.innerHTML = "";
+  opt.steps.forEach((s) => {
+    const li = document.createElement("li");
+    li.textContent = s;
+    dom.stepsList.appendChild(li);
+  });
 
-  if (navigator.clipboard && window.isSecureContext) {
-    navigator.clipboard.writeText(text).then(doSuccess).catch(() => fallbackCopy(text, doSuccess));
+  /* Reset contract type */
+  state.selectedContractType = null;
+  setAllPressed(dom.typeBtns, null);
+  hide(dom.templateArea);
+
+  show(dom.conn2);
+  show(dom.resultWrap);
+  dom.resultWrap.scrollIntoView({ behavior: "smooth", block: "start" });
+
+  announce("Wynik procedury zaktualizowany.");
+  updateResetVisibility();
+}
+
+function renderTemplate() {
+  const opt = getCurrentOption();
+  if (!opt || !state.selectedContractType) return;
+
+  setAllPressed(dom.typeBtns, state.selectedContractType);
+
+  const channel = opt.templateChannel;
+  const tmpl = MESSAGE_TEMPLATES[state.selectedContractType];
+  if (!tmpl) return;
+
+  if (channel === "email" || channel === "sms") {
+    /* Show actual template */
+    const content = tmpl[channel] || "";
+    const channelLabel = channel === "email" ? "E-mail" : "SMS";
+    const badgeClass = channel === "email" ? "channel-badge--email" : "channel-badge--sms";
+
+    dom.templateTitle.innerHTML = `Szablon wiadomości <span class="channel-badge ${badgeClass}">${channelLabel}</span>`;
+    dom.templateContent.textContent = content;
+    dom.templateContent.classList.remove("is-hidden");
+    dom.copyBtn.classList.remove("is-hidden");
+
+    /* Hide notice if it exists */
+    const notice = dom.templateArea.querySelector(".template__notice");
+    if (notice) notice.classList.add("is-hidden");
   } else {
-    fallbackCopy(text, doSuccess);
+    /* No electronic template — show notice */
+    const noticeText = NO_TEMPLATE_MESSAGES[channel] || NO_TEMPLATE_MESSAGES.none;
+    dom.templateTitle.innerHTML = "Szablon wiadomości";
+
+    /* Hide content + copy, show notice */
+    dom.templateContent.classList.add("is-hidden");
+    dom.copyBtn.classList.add("is-hidden");
+
+    let notice = dom.templateArea.querySelector(".template__notice");
+    if (!notice) {
+      notice = document.createElement("div");
+      notice.className = "template__notice";
+      dom.templateArea.appendChild(notice);
+    }
+    notice.textContent = noticeText;
+    notice.classList.remove("is-hidden");
+  }
+
+  resetCopyButton();
+  show(dom.templateArea);
+  dom.templateArea.scrollIntoView({ behavior: "smooth", block: "nearest" });
+
+  announce("Szablon wiadomości zaktualizowany.");
+}
+
+/* ═══════════════════════════════════════
+   Event handlers
+   ═══════════════════════════════════════ */
+
+function handleLevel1Click(key) {
+  if (state.selectedLevel1 === key) return; // already selected
+  state.selectedLevel1 = key;
+  renderLevel2();
+}
+
+function handleLevel2Click(optionId) {
+  if (state.selectedOptionId === optionId) return;
+  state.selectedOptionId = optionId;
+  renderResult();
+}
+
+function handleContractTypeClick(type) {
+  if (state.selectedContractType === type) return;
+  state.selectedContractType = type;
+  renderTemplate();
+}
+
+function handleReset() {
+  resetFrom(1);
+  window.scrollTo({ top: 0, behavior: "smooth" });
+}
+
+async function handleCopy() {
+  const text = dom.templateContent.textContent;
+  if (!text) return;
+
+  try {
+    await navigator.clipboard.writeText(text);
+    setCopyState("success", "Skopiowano!");
+  } catch {
+    setCopyState("error", "Błąd kopiowania");
+  }
+
+  setTimeout(() => resetCopyButton(), 2200);
+}
+
+/* ═══════════════════════════════════════
+   Helpers
+   ═══════════════════════════════════════ */
+
+function show(el) {
+  if (el) el.classList.remove("is-hidden");
+}
+
+function hide(el) {
+  if (el) el.classList.add("is-hidden");
+}
+
+function setText(el, text) {
+  if (el) el.textContent = text;
+}
+
+/** Set aria-pressed on the button whose data-key or data-option-id or data-type matches `activeValue` */
+function setAllPressed(container, activeValue) {
+  if (!container) return;
+  const buttons = container.querySelectorAll("button");
+  buttons.forEach((btn) => {
+    const key = btn.dataset.key || btn.dataset.optionId || btn.dataset.type || "";
+    btn.setAttribute("aria-pressed", key === activeValue ? "true" : "false");
+  });
+}
+
+function setCopyState(variant, label) {
+  dom.copyBtn.classList.remove("btn-copy--success", "btn-copy--error");
+  if (variant) dom.copyBtn.classList.add(`btn-copy--${variant}`);
+  setText(dom.copyLabel, label);
+}
+
+function resetCopyButton() {
+  dom.copyBtn.classList.remove("btn-copy--success", "btn-copy--error");
+  setText(dom.copyLabel, "Kopiuj tekst");
+}
+
+function updateResetVisibility() {
+  if (state.selectedLevel1) {
+    show(dom.resetWrap);
+  } else {
+    hide(dom.resetWrap);
   }
 }
 
-function fallbackCopy(text, cb) {
-  const ta = document.createElement('textarea');
-  ta.value = text;
-  Object.assign(ta.style, { position: 'fixed', opacity: '0', top: '0', left: '0' });
-  document.body.appendChild(ta);
-  ta.focus();
-  ta.select();
-  try {
-    document.execCommand('copy');
-    cb();
-  } catch (_) { /* silent */ }
-  document.body.removeChild(ta);
+function announce(text) {
+  if (dom.liveRegion) {
+    dom.liveRegion.textContent = text;
+  }
 }
 
-function setCopySuccess(btn) {
-  btn.classList.add('btn-copy--ok');
-  btn.setAttribute('aria-label', 'Skopiowano do schowka');
-  btn.innerHTML = `
-    <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
-      <path d="M2 7l3.5 3.5 6.5-6.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-    </svg>
-    Skopiowano!`;
+/* ═══════════════════════════════════════
+   Init
+   ═══════════════════════════════════════ */
 
-  setTimeout(() => {
-    btn.classList.remove('btn-copy--ok');
-    btn.removeAttribute('aria-label');
-    btn.innerHTML = `
-      <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
-        <rect x="4" y="4" width="8" height="8" rx="1.2" stroke="currentColor" stroke-width="1.4"/>
-        <path d="M2 10H1.5A1.5 1.5 0 0 1 0 8.5V1.5A1.5 1.5 0 0 1 1.5 0H8.5A1.5 1.5 0 0 1 10 1.5V2" stroke="currentColor" stroke-width="1.4"/>
-      </svg>
-      Kopiuj treść`;
-  }, 2500);
-}
+document.addEventListener("DOMContentLoaded", () => {
+  cacheDom();
 
-/* ─────────────────────────────────────────────────────────────
-   RESET BAR
-   ───────────────────────────────────────────────────────────── */
-function showResetBar() {
-  show(el('reset-bar'));
-}
+  /* Level 1 buttons */
+  dom.level1Row.querySelectorAll("button[data-key]").forEach((btn) => {
+    btn.addEventListener("click", () => handleLevel1Click(btn.dataset.key));
+  });
 
-function hideResetBar() {
-  hide(el('reset-bar'));
-}
+  /* Contract type buttons */
+  dom.typeBtns.querySelectorAll("button[data-type]").forEach((btn) => {
+    btn.addEventListener("click", () => handleContractTypeClick(btn.dataset.type));
+  });
 
-/* ─────────────────────────────────────────────────────────────
-   RESET
-   ───────────────────────────────────────────────────────────── */
-function reset() {
-  state.level1   = null;
-  state.level2   = null;
-  state.caseType = null;
+  /* Copy */
+  dom.copyBtn.addEventListener("click", handleCopy);
 
-  ['section-step2', 'section-result', 'section-cases', 'section-template']
-    .forEach(id => hide(el(id)));
+  /* Reset */
+  dom.resetBtn.addEventListener("click", handleReset);
 
-  renderLevel1();
-  hideResetBar();
-  window.scrollTo({ top: 0, behavior: 'smooth' });
-}
-
-/* ─────────────────────────────────────────────────────────────
-   RENDER — LEGEND
-   ───────────────────────────────────────────────────────────── */
-function renderLegend() {
-  const list = el('legend-list');
-  list.innerHTML = LEGEND_ITEMS.map(item => `
-    <li class="legend-item">
-      <span class="legend-dot legend-dot--${item.channel}" aria-hidden="true"></span>
-      <span class="legend-item-body">
-        <span class="legend-item-label">${item.label}</span>
-        <span class="legend-item-desc">${item.description}</span>
-      </span>
-    </li>`).join('');
-}
-
-/* ─────────────────────────────────────────────────────────────
-   INIT
-   ───────────────────────────────────────────────────────────── */
-function init() {
-  renderLevel1();
-  renderLegend();
-  el('btn-reset').addEventListener('click', reset);
-}
-
-document.addEventListener('DOMContentLoaded', init);
+  /* Initial state */
+  resetFrom(1);
+});

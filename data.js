@@ -1,379 +1,275 @@
-'use strict';
+/**
+ * data.js — Dane procedur i szablony wiadomości
+ * Procedura potwierdzenia otrzymania wypowiedzenia
+ *
+ * templateChannel:
+ *   "email" — szablon e-mail
+ *   "sms"   — szablon SMS
+ *   "mail"  — Poczta Polska / telefon stacjonarny (brak szablonu elektronicznego)
+ *   "none"  — kopia formularza w BOK (brak szablonu)
+ */
 
-/* ============================================================
-   CHANNEL METADATA
-   ============================================================ */
-const CHANNEL_META = {
-  email: {
-    id: 'email',
-    label: 'E-mail',
-    emoji: '✉'
-  },
-  pocztaPolska: {
-    id: 'pocztaPolska',
-    label: 'Poczta Polska',
-    emoji: '📮'
-  },
-  bok: {
-    id: 'bok',
-    label: 'BOK',
-    emoji: '🏢'
-  }
-};
-
-/* ============================================================
-   CASE TYPES (typy spraw / umów)
-   ============================================================ */
-const CASE_TYPES = [
-  { id: 'internet', label: 'Internet',     icon: '🌐' },
-  { id: 'tv',       label: 'Telewizja',    icon: '📺' },
-  { id: 'phone',    label: 'Telefon',      icon: '📞' },
-  { id: 'bundle',   label: 'Pakiet Multi', icon: '📦' }
-];
-
-/* ============================================================
-   LEGEND
-   ============================================================ */
-const LEGEND_ITEMS = [
-  {
-    channel: 'email',
-    label: 'E-mail',
-    description: 'Korespondencja elektroniczna'
-  },
-  {
-    channel: 'pocztaPolska',
-    label: 'Poczta Polska',
-    description: 'List polecony / korespondencja papierowa'
-  },
-  {
-    channel: 'bok',
-    label: 'BOK',
-    description: 'Biuro Obsługi Klienta — wizyta osobista'
-  }
-];
-
-/* ============================================================
-   PROCEDURES — drzewo decyzyjne
-   ============================================================ */
 const PROCEDURES = {
-
-  /* ── E-MAIL ─────────────────────────────────────────────── */
   email: {
-    id: 'email',
-    label: 'E-mail',
-    description: 'Wypowiedzenie przesłane drogą elektroniczną',
-    channel: 'email',
-    sublevel: [
+    label: "Na e-mail",
+    options: [
       {
-        id: 'email-confirmed',
-        label: 'Klient potwierdził odbiór odpowiedzi',
-        result: {
-          title: 'Wypowiedzenie e-mail — odbiór potwierdzony',
-          channel: 'email',
-          deadline: '30 dni roboczych',
-          status: 'Kompletna',
-          statusClass: 'status--ok',
-          description: 'Klient przesłał wypowiedzenie drogą elektroniczną i potwierdził otrzymanie naszej odpowiedzi. Procedura jest kompletna — należy zarejestrować sprawę i zamknąć ticket w systemie.',
-          steps: [
-            { n: 1, text: 'Zarejestruj wypowiedzenie w systemie CRM jako „Otrzymane".' },
-            { n: 2, text: 'Zweryfikuj poprawność danych klienta i numeru umowy.' },
-            { n: 3, text: 'Wyślij potwierdzenie odbioru na adres e-mail klienta.' },
-            { n: 4, text: 'Ustaw datę rozwiązania umowy zgodnie z warunkami i OWU.', important: true },
-            { n: 5, text: 'Przekaż sprawę do działu rozliczeń.' },
-            { n: 6, text: 'Zamknij ticket z adnotacją „E-mail — potwierdzony".' }
-          ],
-          templateChannel: 'email'
-        }
+        id: "email-any",
+        title: "Dowolne dane kontaktowe",
+        icon: "📝",
+        colorClass: "card--yellow",
+        methodLabel: "E-mail",
+        deadline: "1 dzień roboczy",
+        templateChannel: "email",
+        description:
+          "Potwierdzenie wysyłane na adres e-mail, z którego klient przesłał wypowiedzenie — w ciągu 1 dnia roboczego od jego otrzymania.",
+        steps: [
+          "Przygotuj standardowe potwierdzenie otrzymania wypowiedzenia.",
+          "Wyślij potwierdzenie na adres e-mail, z którego klient przesłał wypowiedzenie.",
+          "Termin: do 1 dnia roboczego od otrzymania wiadomości.",
+        ],
       },
-      {
-        id: 'email-notconfirmed',
-        label: 'Klient nie potwierdził odbioru odpowiedzi',
-        result: {
-          title: 'Wypowiedzenie e-mail — brak potwierdzenia odbioru',
-          channel: 'email',
-          deadline: '7 dni roboczych (oczekiwanie)',
-          status: 'Wymagana akcja',
-          statusClass: 'status--warn',
-          description: 'Klient przesłał wypowiedzenie e-mailem, ale nie potwierdził otrzymania naszej odpowiedzi. Wymagane podjęcie działań uzupełniających zgodnie z poniższą procedurą.',
-          steps: [
-            { n: 1, text: 'Zarejestruj wypowiedzenie w systemie CRM jako „Oczekujące".' },
-            { n: 2, text: 'Wyślij ponowne potwierdzenie odbioru na adres e-mail klienta.', important: true },
-            { n: 3, text: 'Odczekaj 7 dni roboczych na odpowiedź klienta.' },
-            { n: 4, text: 'Jeśli brak odpowiedzi — podejmij próbę kontaktu telefonicznego.', important: true },
-            { n: 5, text: 'W przypadku braku jakiegokolwiek kontaktu — zastosuj procedurę Poczty Polskiej.' },
-            { n: 6, text: 'Udokumentuj wszystkie podjęte kroki w tickecie CRM.' }
-          ],
-          templateChannel: 'email'
-        }
-      }
-    ]
+    ],
   },
 
-  /* ── POCZTA POLSKA ──────────────────────────────────────── */
-  pocztaPolska: {
-    id: 'pocztaPolska',
-    label: 'Poczta Polska',
-    description: 'List polecony lub korespondencja papierowa',
-    channel: 'pocztaPolska',
-    sublevel: [
+  poczta: {
+    label: "Poczta Polska",
+    options: [
       {
-        id: 'poczta-polecony',
-        label: 'List polecony — odbiór potwierdzony zwrotką',
-        result: {
-          title: 'List polecony — odbiór potwierdzony',
-          channel: 'pocztaPolska',
-          deadline: '30 dni roboczych',
-          status: 'Kompletna',
-          statusClass: 'status--ok',
-          description: 'Wypowiedzenie wpłynęło listem poleconym z potwierdzeniem odbioru. Dokument jest wiążący prawnie od daty odbioru wskazanej na zwrotce.',
-          steps: [
-            { n: 1, text: 'Zeskanuj i zarchiwizuj oryginał dokumentu wraz ze zwrotką pocztową.' },
-            { n: 2, text: 'Wprowadź datę odbioru ze zwrotki jako oficjalną datę doręczenia.', important: true },
-            { n: 3, text: 'Zarejestruj w systemie CRM z oznaczeniem „Poczta — polecony".' },
-            { n: 4, text: 'Wyślij potwierdzenie drogą elektroniczną, jeśli dostępny adres e-mail klienta.' },
-            { n: 5, text: 'Ustaw termin rozwiązania umowy od daty odbioru wynikającej ze zwrotki.' },
-            { n: 6, text: 'Przekaż do działu prawnego, jeśli dokument budzi wątpliwości formalne.' }
-          ],
-          templateChannel: null
-        }
+        id: "poczta-email",
+        title: "Klient posiada e-mail",
+        icon: "📧",
+        colorClass: "card--yellow",
+        methodLabel: "E-mail",
+        deadline: "1 dzień roboczy",
+        templateChannel: "email",
+        description:
+          "Potwierdzenie wysyłane na adres e-mail klienta w ciągu 1 dnia roboczego od otrzymania przesyłki pocztowej.",
+        steps: [
+          "Przygotuj potwierdzenie otrzymania wypowiedzenia.",
+          "Wyślij wiadomość na adres e-mail klienta.",
+          "Termin: do 1 dnia roboczego od otrzymania przesyłki.",
+        ],
       },
       {
-        id: 'poczta-awizo',
-        label: 'Awizo — list nieodebrany przez adresata',
-        result: {
-          title: 'Awizo — korespondencja nieodebrana',
-          channel: 'pocztaPolska',
-          deadline: '14 dni (termin awizo)',
-          status: 'Oczekiwanie',
-          statusClass: 'status--pending',
-          description: 'Korespondencja wysłana do klienta wróciła z awizo. Klient nie odebrał przesyłki w wyznaczonym terminie. Stosuje się zasadę fikcji doręczenia.',
-          steps: [
-            { n: 1, text: 'Odnotuj datę pierwszego awizo w systemie CRM.' },
-            { n: 2, text: 'Sprawdź, czy upłynął 14-dniowy termin odbioru przesyłki.', important: true },
-            { n: 3, text: 'Po upływie terminu zastosuj fikcję doręczenia: data ostatniego awizo = data doręczenia.', important: true },
-            { n: 4, text: 'Zarchiwizuj kopertę z awizo jako dowód próby doręczenia.' },
-            { n: 5, text: 'Zaktualizuj status w CRM na „Doręczone — fikcja prawna".' },
-            { n: 6, text: 'Poinformuj dział prawny o zastosowaniu fikcji doręczenia.' }
-          ],
-          templateChannel: null
-        }
+        id: "poczta-telkom",
+        title: "Brak e-maila, jest tel. komórkowy",
+        icon: "📱",
+        colorClass: "card--yellow",
+        methodLabel: "SMS",
+        deadline: "1 dzień roboczy",
+        templateChannel: "sms",
+        description:
+          "Potwierdzenie wysyłane SMS-em na numer telefonu komórkowego klienta w ciągu 1 dnia roboczego.",
+        steps: [
+          "Przygotuj treść SMS z potwierdzeniem otrzymania wypowiedzenia.",
+          "Wyślij SMS na numer telefonu komórkowego klienta.",
+          "Termin: do 1 dnia roboczego od otrzymania przesyłki.",
+        ],
       },
       {
-        id: 'poczta-zwrot',
-        label: 'List zwrócony — adres nieaktualny lub nieznany',
-        result: {
-          title: 'List zwrócony — adres nieaktualny',
-          channel: 'pocztaPolska',
-          deadline: 'Wymaga weryfikacji',
-          status: 'Wymaga akcji',
-          statusClass: 'status--warn',
-          description: 'Przesyłka wróciła do Multiplay z adnotacją „adresat nieznany" lub „adres nieaktualny". Konieczna weryfikacja danych adresowych klienta przed ponowną wysyłką.',
-          steps: [
-            { n: 1, text: 'Zarchiwizuj zwróconą kopertę z datą zwrotu i adnotacją poczty.' },
-            { n: 2, text: 'Zweryfikuj adres klienta w systemie CRM oraz dostępnych bazach.', important: true },
-            { n: 3, text: 'Skontaktuj się z klientem telefonicznie lub e-mailem, aby zaktualizować adres.', important: true },
-            { n: 4, text: 'Po aktualizacji danych — wyślij ponownie listem poleconym za potwierdzeniem odbioru.' },
-            { n: 5, text: 'Jeśli brak kontaktu przez 14 dni roboczych — eskalacja do działu prawnego.' },
-            { n: 6, text: 'Odnotuj wszystkie podjęte kroki z datami w tickecie CRM.' }
-          ],
-          templateChannel: null
-        }
-      }
-    ]
+        id: "poczta-telstac",
+        title: "Brak e-maila i tel. kom., jest tel. stacjonarny",
+        icon: "☎️",
+        colorClass: "card--yellow",
+        methodLabel: "Telefon stacjonarny + Poczta Polska",
+        deadline: "Do 14 dni",
+        templateChannel: "mail",
+        description:
+          "Kontakt telefoniczny (do 3 prób). Niezależnie od wyniku rozmowy — potwierdzenie wysyłane listem Pocztą Polską jako trwały nośnik zgodnie z PKE.",
+        steps: [
+          "Wykonaj do 3 prób połączenia telefonicznego w celu potwierdzenia otrzymania.",
+          "Jeśli kontakt telefoniczny jest nieskuteczny — przygotuj potwierdzenie pisemne.",
+          "Niezależnie od wyniku rozmowy wyślij potwierdzenie Pocztą Polską (trwały nośnik zgodnie z PKE).",
+          "Termin wysyłki pocztowej: do 14 dni od otrzymania wypowiedzenia.",
+        ],
+      },
+      {
+        id: "poczta-brak",
+        title: "Brak danych elektronicznych",
+        icon: "❌",
+        colorClass: "card--yellow",
+        methodLabel: "List Pocztą Polską",
+        deadline: "Do 14 dni",
+        templateChannel: "mail",
+        description:
+          "Brak danych kontaktowych elektronicznych — potwierdzenie wysyłane wyłącznie listem Pocztą Polską.",
+        steps: [
+          "Przygotuj potwierdzenie otrzymania wypowiedzenia w formie pisemnej.",
+          "Wyślij potwierdzenie listem za pośrednictwem Poczty Polskiej.",
+          "Termin: do 14 dni od otrzymania wypowiedzenia.",
+        ],
+      },
+    ],
   },
 
-  /* ── BOK ────────────────────────────────────────────────── */
   bok: {
-    id: 'bok',
-    label: 'BOK',
-    description: 'Złożone bezpośrednio w Biurze Obsługi Klienta',
-    channel: 'bok',
-    sublevel: [
+    label: "Osobiście w BOK",
+    options: [
       {
-        id: 'bok-osobiscie',
-        label: 'Złożone osobiście przez klienta',
-        result: {
-          title: 'BOK — złożone osobiście przez klienta',
-          channel: 'bok',
-          deadline: '30 dni roboczych',
-          status: 'Kompletna',
-          statusClass: 'status--ok',
-          description: 'Klient złożył wypowiedzenie bezpośrednio w Biurze Obsługi Klienta. Tożsamość klienta została potwierdzona przez pracownika BOK w trakcie wizyty.',
-          steps: [
-            { n: 1, text: 'Zweryfikuj tożsamość klienta na podstawie dokumentu tożsamości.', important: true },
-            { n: 2, text: 'Przyjmij oryginał wypowiedzenia i ostempluj datą wpływu.' },
-            { n: 3, text: 'Wydaj klientowi kopię z pieczęcią jako potwierdzenie złożenia dokumentu.' },
-            { n: 4, text: 'Wprowadź do CRM: datę złożenia oraz imię i nazwisko pracownika przyjmującego.' },
-            { n: 5, text: 'Zeskanuj i zarchiwizuj oryginał dokumentu w systemie.' },
-            { n: 6, text: 'Ustaw termin rozwiązania umowy od daty złożenia dokumentu.' }
-          ],
-          templateChannel: 'bok'
-        }
+        id: "bok-tak",
+        title: "Klient wypełnił formularz PKE",
+        icon: "✅",
+        colorClass: "card--orange",
+        methodLabel: "Kopia formularza w BOK",
+        deadline: "Od razu",
+        templateChannel: "none",
+        description:
+          "Klient otrzymuje kopię uzupełnionego formularza bezpośrednio w BOK. Oryginał zostaje w dokumentacji.",
+        steps: [
+          "Poproś klienta o wypełnienie formularza zgodnego z PKE.",
+          "Zachowaj oryginał formularza w dokumentacji BOK.",
+          "Wręcz klientowi kopię formularza od razu.",
+        ],
       },
       {
-        id: 'bok-pelnomocnik',
-        label: 'Złożone przez pełnomocnika klienta',
-        result: {
-          title: 'BOK — złożone przez pełnomocnika',
-          channel: 'bok',
-          deadline: '30 dni roboczych',
-          status: 'Wymaga weryfikacji',
-          statusClass: 'status--warn',
-          description: 'Wypowiedzenie złożono przez osobę działającą w imieniu klienta. Wymagana staranna weryfikacja zakresu pełnomocnictwa przed przyjęciem dokumentu.',
-          steps: [
-            { n: 1, text: 'Zweryfikuj tożsamość pełnomocnika na podstawie dokumentu tożsamości.', important: true },
-            { n: 2, text: 'Sprawdź oryginał lub notarialnie poświadczoną kopię pełnomocnictwa.', important: true },
-            { n: 3, text: 'Upewnij się, że pełnomocnictwo obejmuje wypowiedzenie umowy z Multiplay.' },
-            { n: 4, text: 'Przyjmij wypowiedzenie i ostempluj datą wpływu.' },
-            { n: 5, text: 'Wprowadź do CRM z adnotacją „Pełnomocnik" oraz danymi osoby upoważnionej.' },
-            { n: 6, text: 'Przekaż kopię dokumentacji do działu prawnego w ciągu 24 godzin.', important: true }
-          ],
-          templateChannel: 'bok'
-        }
-      }
-    ]
-  }
-
+        id: "bok-nie-email",
+        title: "Odmówił formularza, posiada e-mail",
+        icon: "📧",
+        colorClass: "card--orange",
+        methodLabel: "E-mail",
+        deadline: "1 dzień roboczy",
+        templateChannel: "email",
+        description:
+          "Klient odmówił wypełnienia formularza — potwierdzenie wysyłane na jego adres e-mail w ciągu 1 dnia roboczego.",
+        steps: [
+          "Przyjmij wypowiedzenie mimo odmowy wypełnienia formularza.",
+          "Przygotuj potwierdzenie otrzymania wypowiedzenia.",
+          "Wyślij potwierdzenie na adres e-mail klienta.",
+          "Termin: do 1 dnia roboczego od otrzymania.",
+        ],
+      },
+      {
+        id: "bok-nie-telkom",
+        title: "Odmówił formularza, brak e-maila, jest tel. kom.",
+        icon: "📱",
+        colorClass: "card--orange",
+        methodLabel: "SMS",
+        deadline: "1 dzień roboczy",
+        templateChannel: "sms",
+        description:
+          "Klient odmówił formularza i nie posiada e-maila — potwierdzenie wysyłane SMS-em w ciągu 1 dnia roboczego.",
+        steps: [
+          "Przyjmij wypowiedzenie mimo odmowy formularza.",
+          "Przygotuj treść SMS z potwierdzeniem otrzymania.",
+          "Wyślij SMS na numer telefonu komórkowego klienta.",
+          "Termin: do 1 dnia roboczego od otrzymania.",
+        ],
+      },
+      {
+        id: "bok-nie-telstac",
+        title: "Odmówił formularza, tylko tel. stacjonarny",
+        icon: "☎️",
+        colorClass: "card--orange",
+        methodLabel: "Telefon stacjonarny + Poczta Polska",
+        deadline: "Do 14 dni",
+        templateChannel: "mail",
+        description:
+          "Klient odmówił formularza i posiada jedynie telefon stacjonarny — do 3 prób kontaktu, następnie potwierdzenie listem Pocztą Polską.",
+        steps: [
+          "Przyjmij wypowiedzenie mimo odmowy formularza.",
+          "Wykonaj do 3 prób kontaktu telefonicznego w celu potwierdzenia.",
+          "Jeśli kontakt nieskuteczny — wyślij potwierdzenie listem Pocztą Polską.",
+          "Termin wysyłki pocztowej: do 14 dni od otrzymania.",
+        ],
+      },
+      {
+        id: "bok-nie-brak",
+        title: "Odmówił formularza, brak danych elektronicznych",
+        icon: "❌",
+        colorClass: "card--orange",
+        methodLabel: "List Pocztą Polską",
+        deadline: "Do 14 dni",
+        templateChannel: "mail",
+        description:
+          "Klient odmówił formularza i nie posiada żadnych danych kontaktowych elektronicznych — potwierdzenie wysyłane listem Pocztą Polską.",
+        steps: [
+          "Przyjmij wypowiedzenie mimo odmowy formularza.",
+          "Przygotuj potwierdzenie otrzymania w formie pisemnej.",
+          "Wyślij potwierdzenie listem za pośrednictwem Poczty Polskiej.",
+          "Termin: do 14 dni od otrzymania.",
+        ],
+      },
+    ],
+  },
 };
 
-/* ============================================================
-   MESSAGE TEMPLATES
-   templateChannel: 'email' | 'bok' | null
-   null = brak szablonu elektronicznego dla tej ścieżki
-   ============================================================ */
+/**
+ * Szablony wiadomości — klucze: zaleglosc, nadplata, zerwanie
+ * Każdy posiada wariant: email, sms
+ * Wariant „mail" (Poczta Polska) i „none" (BOK) nie mają szablonu elektronicznego.
+ */
 const MESSAGE_TEMPLATES = {
+  zaleglosc: {
+    label: "Zaległość na koncie",
+    icon: "💰",
+    email: `Dzień dobry,
 
-  email: {
-    internet: {
-      subject: 'Potwierdzenie otrzymania wypowiedzenia umowy — usługa Internet',
-      body: `Szanowny/a Kliencie,
+informuję, że wypowiedzenie umowy zostało przyjęte na podstawie przesłanego dokumentu.
 
-niniejszym potwierdzamy otrzymanie Państwa wypowiedzenia umowy o świadczenie usług internetowych.
+Data otrzymania wypowiedzenia: [DD.MM.RRRR]
+Data rozwiązania umowy: [DD.MM.RRRR]
+Umowa: [NR UMOWY], [USŁUGI]
+Aktualne saldo na koncie: [KWOTA] zł (zaległość)
 
-Wypowiedzenie zostało zarejestrowane w naszym systemie dnia [DATA WPŁYWU].
-Umowa zostanie rozwiązana z dniem [DATA ROZWIĄZANIA], zgodnie z obowiązującym okresem wypowiedzenia określonym w OWU.
-
-W razie jakichkolwiek pytań prosimy o kontakt z Biurem Obsługi Klienta.
-
-Z wyrazami szacunku,
-Dział Obsługi Klienta
-Multiplay Sp. z o.o.`
-    },
-    tv: {
-      subject: 'Potwierdzenie otrzymania wypowiedzenia umowy — usługa Telewizja',
-      body: `Szanowny/a Kliencie,
-
-potwierdzamy przyjęcie Państwa wypowiedzenia umowy na świadczenie usług telewizyjnych.
-
-Data rejestracji wypowiedzenia: [DATA WPŁYWU]
-Planowana data rozwiązania umowy: [DATA ROZWIĄZANIA]
-
-Uprzejmie informujemy o konieczności zwrotu sprzętu dekodującego w terminie 14 dni od daty rozwiązania umowy.
-
-W razie pytań zapraszamy do kontaktu.
-
-Z wyrazami szacunku,
-Dział Obsługi Klienta
-Multiplay Sp. z o.o.`
-    },
-    phone: {
-      subject: 'Potwierdzenie otrzymania wypowiedzenia umowy — usługa Telefon',
-      body: `Szanowny/a Kliencie,
-
-potwierdzamy otrzymanie Państwa wypowiedzenia umowy na świadczenie usług telefonicznych.
-
-Wypowiedzenie zarejestrowane: [DATA WPŁYWU]
-Termin rozwiązania umowy: [DATA ROZWIĄZANIA]
-
-Po rozwiązaniu umowy numer telefonu zostanie dezaktywowany lub przeniesiony zgodnie z Państwa dyspozycją.
-
-Z wyrazami szacunku,
-Dział Obsługi Klienta
-Multiplay Sp. z o.o.`
-    },
-    bundle: {
-      subject: 'Potwierdzenie otrzymania wypowiedzenia umowy — Pakiet Multi',
-      body: `Szanowny/a Kliencie,
-
-potwierdzamy otrzymanie Państwa wypowiedzenia umowy zawartej w ramach Pakietu Multi.
-
-Wypowiedzenie zarejestrowane: [DATA WPŁYWU]
-Planowana data rozwiązania: [DATA ROZWIĄZANIA]
-
-Zwracamy uwagę, że wypowiedzenie dotyczy wszystkich usług objętych pakietem. Jeśli chcą Państwo zachować wybrane usługi, prosimy o kontakt z naszym BOK przed datą rozwiązania umowy.
-
-Z wyrazami szacunku,
-Dział Obsługi Klienta
-Multiplay Sp. z o.o.`
-    }
+Przypominam o konieczności uregulowania zaległości oraz zwrotu dzierżawionych urządzeń w terminie 14 dni od zakończenia umowy na adres:
+• Biuro Operatora — ul. Wspólna 1/o, 45-837 Opole
+• BOK Knurów — ul. Szpitalna 8/101, 44-190 Knurów
+lub za pośrednictwem Poczty Polskiej / kuriera.`,
+    sms: `[GRUPA MULTIPLAY] Wypowiedzenie umowy przyjęte. Data otrzymania: [DD.MM.RRRR]. Rozwiązanie: [DD.MM.RRRR]. Umowa [NR UMOWY]. Saldo: [KWOTA] zł (zaległość). Prosimy o uregulowanie zaległości i zwrot urządzeń w ciągu 14 dni na adres: ul. Wspólna 1/o, 45-837 Opole lub BOK Knurów, ul. Szpitalna 8/101.`,
   },
 
-  bok: {
-    internet: {
-      subject: 'Potwierdzenie przyjęcia wypowiedzenia w BOK — usługa Internet',
-      body: `Szanowny/a Kliencie,
+  nadplata: {
+    label: "Nadpłata na koncie",
+    icon: "💸",
+    email: `Dzień dobry,
 
-potwierdzamy przyjęcie w naszym Biurze Obsługi Klienta Państwa wypowiedzenia umowy o świadczenie usług internetowych.
+informuję, że wypowiedzenie umowy zostało przyjęte na podstawie przesłanego dokumentu.
 
-Data złożenia dokumentu: [DATA WPŁYWU]
-Pracownik przyjmujący: [IMIĘ I NAZWISKO PRACOWNIKA]
-Planowana data rozwiązania umowy: [DATA ROZWIĄZANIA]
+Data otrzymania wypowiedzenia: [DD.MM.RRRR]
+Data rozwiązania umowy: [DD.MM.RRRR]
+Umowa: [NR UMOWY], [USŁUGI]
+Aktualne saldo na koncie: [KWOTA] zł (nadpłata)
 
-Kopia potwierdzenia złożenia dokumentu została przekazana klientowi w dniu wizyty.
+W załączniku przesyłam formularz zwrotu nadpłaty. Proszę o jego wypełnienie i odesłanie w formie skanu na ten adres e-mail.
 
-Z wyrazami szacunku,
-Dział Obsługi Klienta
-Multiplay Sp. z o.o.`
-    },
-    tv: {
-      subject: 'Potwierdzenie przyjęcia wypowiedzenia w BOK — usługa Telewizja',
-      body: `Szanowny/a Kliencie,
-
-potwierdzamy przyjęcie w Biurze Obsługi Klienta Państwa wypowiedzenia umowy na świadczenie usług telewizyjnych.
-
-Data złożenia dokumentu: [DATA WPŁYWU]
-Pracownik przyjmujący: [IMIĘ I NAZWISKO PRACOWNIKA]
-Planowana data rozwiązania: [DATA ROZWIĄZANIA]
-
-Prosimy o zwrot sprzętu dekodującego w ciągu 14 dni od daty rozwiązania umowy.
-
-Z wyrazami szacunku,
-Dział Obsługi Klienta
-Multiplay Sp. z o.o.`
-    },
-    phone: {
-      subject: 'Potwierdzenie przyjęcia wypowiedzenia w BOK — usługa Telefon',
-      body: `Szanowny/a Kliencie,
-
-potwierdzamy przyjęcie w Biurze Obsługi Klienta Państwa wypowiedzenia umowy telefonicznej.
-
-Data złożenia: [DATA WPŁYWU]
-Pracownik: [IMIĘ I NAZWISKO PRACOWNIKA]
-Data rozwiązania: [DATA ROZWIĄZANIA]
-
-Z wyrazami szacunku,
-Dział Obsługi Klienta
-Multiplay Sp. z o.o.`
-    },
-    bundle: {
-      subject: 'Potwierdzenie przyjęcia wypowiedzenia w BOK — Pakiet Multi',
-      body: `Szanowny/a Kliencie,
-
-potwierdzamy przyjęcie w Biurze Obsługi Klienta Państwa wypowiedzenia umowy Pakietu Multi.
-
-Data złożenia: [DATA WPŁYWU]
-Pracownik: [IMIĘ I NAZWISKO PRACOWNIKA]
-Planowana data rozwiązania: [DATA ROZWIĄZANIA]
-
-Wypowiedzenie obejmuje wszystkie usługi objęte pakietem.
-
-Z wyrazami szacunku,
-Dział Obsługi Klienta
-Multiplay Sp. z o.o.`
-    }
+Przypominam o konieczności zwrotu dzierżawionych urządzeń w terminie 14 dni od zakończenia umowy na adres:
+• Biuro Operatora — ul. Wspólna 1/o, 45-837 Opole
+• BOK Knurów — ul. Szpitalna 8/101, 44-190 Knurów
+lub za pośrednictwem Poczty Polskiej / kuriera.`,
+    sms: `[GRUPA MULTIPLAY] Wypowiedzenie umowy przyjęte. Data otrzymania: [DD.MM.RRRR]. Rozwiązanie: [DD.MM.RRRR]. Umowa [NR UMOWY]. Saldo: [KWOTA] zł (nadpłata). Informacja o zwrocie nadpłaty zostanie wysłana osobną korespondencją. Prosimy o zwrot urządzeń w ciągu 14 dni na adres: ul. Wspólna 1/o, 45-837 Opole lub BOK Knurów, ul. Szpitalna 8/101.`,
   },
 
-  /* Poczta Polska — brak szablonu elektronicznego */
-  pocztaPolska: null
+  zerwanie: {
+    label: "Zerwanie umowy",
+    icon: "⚠️",
+    email: `Dzień dobry,
 
+informuję, że wypowiedzenie umowy zostało przyjęte na podstawie przesłanego dokumentu.
+
+Data otrzymania wypowiedzenia: [DD.MM.RRRR]
+Data rozwiązania umowy: [DD.MM.RRRR]
+Umowa: [NR UMOWY], [USŁUGI]
+Aktualne saldo na koncie: [KWOTA] zł
+
+Wypowiedzenie zostało zakwalifikowane jako przedterminowe rozwiązanie umowy. Operatorowi przysługuje roszczenie w wysokości pozostałych opłat abonamentowych, pomniejszonych proporcjonalnie o okres od zawarcia umowy do dnia jej rozwiązania.
+
+Informuję o możliwości:
+• cesji umowy — realizowanej w Biurze Obsługi Klienta,
+• wycofania wypowiedzenia — przed datą rozwiązania umowy.
+
+Przypominam o konieczności zwrotu dzierżawionych urządzeń w terminie 14 dni od zakończenia umowy na adres:
+• Biuro Operatora — ul. Wspólna 1/o, 45-837 Opole
+• BOK Knurów — ul. Szpitalna 8/101, 44-190 Knurów
+lub za pośrednictwem Poczty Polskiej / kuriera.`,
+    sms: `[GRUPA MULTIPLAY] Wypowiedzenie umowy przyjęte (przedterminowe rozwiązanie). Data otrzymania: [DD.MM.RRRR]. Rozwiązanie: [DD.MM.RRRR]. Umowa [NR UMOWY]. Saldo: [KWOTA] zł. Operatorowi przysługuje roszczenie. Możliwość cesji lub wycofania wypowiedzenia w BOK. Zwrot urządzeń w ciągu 14 dni: ul. Wspólna 1/o, 45-837 Opole lub BOK Knurów, ul. Szpitalna 8/101.`,
+  },
+};
+
+/**
+ * Komunikat wyświetlany gdy dla danej ścieżki nie ma szablonu elektronicznego.
+ */
+const NO_TEMPLATE_MESSAGES = {
+  mail: "Dla tej ścieżki potwierdzenie wysyłane jest listem Pocztą Polską. Szablon wiadomości elektronicznej nie ma zastosowania — treść przygotowywana jest w formie pisemnej zgodnie z wewnętrzną procedurą.",
+  none: "Klient otrzymuje kopię formularza bezpośrednio w BOK. Szablon wiadomości elektronicznej nie ma zastosowania.",
 };
