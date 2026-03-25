@@ -166,7 +166,7 @@ function renderTemplate() {
     dom.templateContent.classList.remove("is-hidden");
     dom.copyBtn.classList.remove("is-hidden");
 
-    /* Show notice container but hide the notice itself */
+    /* Hide notice if it exists */
     const notice = dom.templateArea.querySelector(".template__notice");
     if (notice) notice.classList.add("is-hidden");
   } else {
