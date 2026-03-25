@@ -3,190 +3,195 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Procedura potwierdzenia wypowiedzenia — Narzędzie wewnętrzne</title>
-
-  <!-- Fonts -->
+  <title>Procedura potwierdzenia wypowiedzenia – Multiplay</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap" rel="stylesheet">
-
-  <!-- Styles -->
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
 
-<main class="app" role="main">
+  <!-- ══════════════ HEADER ══════════════ -->
+  <header class="site-header" role="banner">
+    <div class="header-inner">
 
-  <!-- ── Header ── -->
-  <header class="app-header">
-    <h1 class="app-header__title">Procedura potwierdzenia otrzymania wypowiedzenia</h1>
-    <p class="app-header__subtitle">Wybierz sposób otrzymania wypowiedzenia, wariant kontaktu i typ umowy, aby zobaczyć wymaganą procedurę i gotowy szablon wiadomości.</p>
+      <a href="#" class="header-logo-link" aria-label="Multiplay – strona główna narzędzia">
+        <img
+          src="logo1.png"
+          alt="Multiplay"
+          class="site-logo"
+          width="180"
+          height="72"
+        >
+      </a>
+
+      <div class="header-text">
+        <h1 class="site-title">Procedura potwierdzenia wypowiedzenia</h1>
+        <p class="site-subtitle">Narzędzie operacyjne&ensp;·&ensp;Dział Obsługi Klienta</p>
+      </div>
+
+      <!-- Dekoracyjny watermark — ikona marki -->
+      <img
+        src="Ikonyy-3-1024x1024.png"
+        alt=""
+        class="header-deco"
+        aria-hidden="true"
+        role="presentation"
+      >
+
+    </div>
+
+    <!-- Multiplay brand stripe -->
+    <div class="header-stripe" aria-hidden="true">
+      <span class="stripe stripe--y"></span>
+      <span class="stripe stripe--r"></span>
+      <span class="stripe stripe--g"></span>
+    </div>
   </header>
+  <!-- /HEADER -->
 
-  <!-- ── Level 1: Method of receipt ── -->
-  <section aria-label="Sposób otrzymania wypowiedzenia">
-    <div class="section-label">
-      <span class="section-label__text">Krok 1 — Sposób otrzymania</span>
-      <span class="section-label__line"></span>
-    </div>
 
-    <div class="card-row" id="level1-row" role="group" aria-label="Wybór sposobu otrzymania">
-      <button type="button" class="card card--email" data-key="email" aria-pressed="false">
-        <span class="card__icon">📧</span>
-        <span class="card__title">Na e-mail</span>
-      </button>
-      <button type="button" class="card card--poczta" data-key="poczta" aria-pressed="false">
-        <span class="card__icon">📬</span>
-        <span class="card__title">Poczta Polska</span>
-      </button>
-      <button type="button" class="card card--bok" data-key="bok" aria-pressed="false">
-        <span class="card__icon">👨‍💼</span>
-        <span class="card__title">Osobiście w BOK</span>
-      </button>
-    </div>
-  </section>
+  <!-- ══════════════ PAGE WRAPPER ══════════════ -->
+  <div class="page-wrapper">
 
-  <!-- Connector 1 -->
-  <div class="connector is-hidden" id="conn1" aria-hidden="true">
-    <div class="connector__line"></div>
-  </div>
+    <!-- ── MAIN FLOW ── -->
+    <main class="main-flow" id="main" role="main">
 
-  <!-- ── Level 2: Contact variant ── -->
-  <section aria-label="Wariant kontaktu">
-    <div class="section-label is-hidden" id="level2-label">
-      <span class="section-label__text">Krok 2 — Wariant kontaktu</span>
-      <span class="section-label__line"></span>
-    </div>
+      <!-- ─ KROK 1: Kanał ─ -->
+      <section class="flow-section" id="section-step1">
+        <div class="section-label">
+          <span class="step-badge" aria-hidden="true">1</span>
+          <h2 class="section-heading">Jak otrzymano wypowiedzenie?</h2>
+        </div>
+        <div
+          class="cards-grid"
+          id="cards-level1"
+          role="listbox"
+          aria-label="Wybierz sposób otrzymania wypowiedzenia"
+        >
+          <!-- JS -->
+        </div>
+      </section>
 
-    <div class="card-row is-hidden" id="level2-row" role="group" aria-label="Wybór wariantu kontaktu">
-      <!-- Dynamically populated by script.js -->
-    </div>
-  </section>
-
-  <!-- Connector 2 -->
-  <div class="connector is-hidden" id="conn2" aria-hidden="true">
-    <div class="connector__line"></div>
-  </div>
-
-  <!-- ── Result panel ── -->
-  <section class="result is-hidden" id="result-wrap" aria-label="Wynik procedury" aria-live="polite">
-
-    <h2 class="result__heading">Wymagana procedura</h2>
-
-    <div class="result__meta">
-      <div class="meta-box">
-        <div class="meta-box__label">Metoda potwierdzenia</div>
-        <div class="meta-box__value" id="res-method"></div>
-      </div>
-      <div class="meta-box">
-        <div class="meta-box__label">Termin wysyłki</div>
-        <div class="meta-box__value" id="res-deadline"></div>
-      </div>
-    </div>
-
-    <div class="result__desc" id="res-desc"></div>
-
-    <h3 class="result__steps-heading">Kroki procedury</h3>
-    <ol class="steps-list" id="steps-list">
-      <!-- Dynamically populated -->
-    </ol>
-
-    <!-- Contract type selection -->
-    <div class="divider"></div>
-    <h3 class="type-heading">Krok 3 — Wybierz typ sprawy</h3>
-
-    <div class="type-row" id="type-btns" role="group" aria-label="Wybór typu sprawy">
-      <button type="button" class="type-btn" data-type="zaleglosc" aria-pressed="false">
-        <span class="type-btn__icon">💰</span>
-        <span>Zaległość na koncie</span>
-      </button>
-      <button type="button" class="type-btn" data-type="nadplata" aria-pressed="false">
-        <span class="type-btn__icon">💸</span>
-        <span>Nadpłata na koncie</span>
-      </button>
-      <button type="button" class="type-btn" data-type="zerwanie" aria-pressed="false">
-        <span class="type-btn__icon">⚠️</span>
-        <span>Zerwanie umowy</span>
-      </button>
-    </div>
-
-    <!-- Template area -->
-    <div class="template is-hidden" id="template-area">
-      <div class="divider"></div>
-      <div class="template__header">
-        <h4 class="template__title" id="template-title">Szablon wiadomości</h4>
-        <button type="button" class="btn-copy" id="copy-btn">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <rect x="9" y="9" width="13" height="13" rx="2"/>
-            <path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/>
+      <!-- ─ KROK 2: Szczegóły ─ -->
+      <section
+        class="flow-section hidden"
+        id="section-step2"
+        aria-live="polite"
+        aria-label="Krok 2 – doprecyzuj sytuację"
+      >
+        <div class="step-connector" aria-hidden="true">
+          <svg width="18" height="36" viewBox="0 0 18 36" fill="none">
+            <line x1="9" y1="0" x2="9" y2="36"
+              stroke="#D1D5DB" stroke-width="2" stroke-dasharray="4 3"/>
           </svg>
-          <span id="copy-label">Kopiuj tekst</span>
-        </button>
-      </div>
-      <pre class="template__content" id="template-content"></pre>
-    </div>
-  </section>
+        </div>
+        <div class="section-label">
+          <span class="step-badge" aria-hidden="true">2</span>
+          <h2 class="section-heading">Doprecyzuj sytuację</h2>
+        </div>
+        <div
+          class="cards-grid"
+          id="cards-level2"
+          role="listbox"
+          aria-label="Wybierz szczegóły sytuacji"
+        >
+          <!-- JS -->
+        </div>
+      </section>
 
-  <!-- Reset button -->
-  <div class="btn-reset-wrap is-hidden" id="reset-wrap">
-    <button type="button" class="btn-reset" id="reset-btn">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M3 12a9 9 0 019-9 9.75 9.75 0 016.74 2.74L21 8"/>
-        <path d="M21 3v5h-5"/>
-        <path d="M21 12a9 9 0 01-9 9 9.75 9.75 0 01-6.74-2.74L3 16"/>
-        <path d="M3 21v-5h5"/>
+      <!-- ─ WYNIK PROCEDURY ─ -->
+      <section
+        class="flow-section hidden"
+        id="section-result"
+        aria-live="polite"
+        aria-label="Wynik procedury"
+      >
+        <div class="step-connector" aria-hidden="true">
+          <svg width="18" height="36" viewBox="0 0 18 36" fill="none">
+            <line x1="9" y1="0" x2="9" y2="36"
+              stroke="#D1D5DB" stroke-width="2" stroke-dasharray="4 3"/>
+          </svg>
+        </div>
+        <div id="result-panel" role="region" aria-label="Wynik i kroki procedury">
+          <!-- JS -->
+        </div>
+      </section>
+
+      <!-- ─ KROK 3: Typ sprawy ─ -->
+      <section
+        class="flow-section hidden"
+        id="section-cases"
+        aria-live="polite"
+        aria-label="Krok 3 – wybierz typ sprawy"
+      >
+        <div class="section-label section-label--cases">
+          <span class="step-badge step-badge--sub" aria-hidden="true">3</span>
+          <div>
+            <h2 class="section-heading">Wybierz typ sprawy / umowy</h2>
+            <p class="section-hint">Wybierz typ umowy, aby wygenerować szablon wiadomości</p>
+          </div>
+        </div>
+        <div
+          class="cards-grid cards-grid--cases"
+          id="cards-cases"
+          role="listbox"
+          aria-label="Wybierz typ umowy"
+        >
+          <!-- JS -->
+        </div>
+      </section>
+
+      <!-- ─ SZABLON WIADOMOŚCI ─ -->
+      <section
+        class="flow-section hidden"
+        id="section-template"
+        aria-live="polite"
+        aria-label="Szablon wiadomości"
+      >
+        <div id="template-panel" role="region" aria-label="Szablon wiadomości do wysyłki">
+          <!-- JS -->
+        </div>
+      </section>
+
+    </main>
+    <!-- /MAIN FLOW -->
+
+
+    <!-- ── SIDEBAR: LEGENDA ── -->
+    <aside class="legend-aside" aria-label="Legenda kanałów obsługi">
+      <div class="legend-panel">
+        <h3 class="legend-title">Legenda kanałów</h3>
+        <ul
+          class="legend-list"
+          id="legend-list"
+          role="list"
+          aria-label="Kanały obsługi"
+        >
+          <!-- JS -->
+        </ul>
+      </div>
+    </aside>
+    <!-- /SIDEBAR -->
+
+  </div>
+  <!-- /PAGE WRAPPER -->
+
+
+  <!-- ══════════════ RESET BAR (fixed) ══════════════ -->
+  <div class="reset-bar hidden" id="reset-bar" role="complementary" aria-label="Akcje">
+    <button type="button" class="btn-reset" id="btn-reset">
+      <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
+        <path d="M1.5 7a5.5 5.5 0 1 1 1.1 3.3" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+        <polyline points="1.5,3.5 1.5,7 5,7" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
       </svg>
       Zacznij od nowa
     </button>
   </div>
+  <!-- /RESET BAR -->
 
-  <!-- Legend -->
-  <aside class="legend" aria-label="Legenda">
-    <h2 class="legend__title">Legenda</h2>
-    <div class="legend__grid">
-      <div class="legend__item">
-        <div class="legend__swatch" style="background:var(--color-email)"></div>
-        Wypowiedzenie na e-mail
-      </div>
-      <div class="legend__item">
-        <div class="legend__swatch" style="background:var(--color-poczta)"></div>
-        Wypowiedzenie Pocztą Polską
-      </div>
-      <div class="legend__item">
-        <div class="legend__swatch" style="background:var(--color-bok)"></div>
-        Wypowiedzenie w BOK
-      </div>
-      <div class="legend__item">
-        <div class="legend__swatch" style="background:var(--color-yellow)"></div>
-        Dane kontaktowe klienta
-      </div>
-      <div class="legend__item">
-        <div class="legend__swatch" style="background:var(--color-orange)"></div>
-        Opcje formularza BOK
-      </div>
-      <div class="legend__item">
-        <div class="legend__swatch" style="background:var(--color-danger-bg);border:1px solid var(--color-danger)"></div>
-        Zaległość na koncie
-      </div>
-      <div class="legend__item">
-        <div class="legend__swatch" style="background:var(--color-success-bg);border:1px solid var(--color-success)"></div>
-        Nadpłata na koncie
-      </div>
-      <div class="legend__item">
-        <div class="legend__swatch" style="background:var(--color-warn-bg);border:1px solid var(--color-warn)"></div>
-        Zerwanie umowy
-      </div>
-    </div>
-  </aside>
 
-  <!-- Live region for screen readers -->
-  <div class="sr-only" id="live-region" aria-live="polite" aria-atomic="true"></div>
-
-</main>
-
-<!-- Scripts: data first, then logic -->
-<script src="data.js"></script>
-<script src="script.js"></script>
-
+  <script src="data.js"></script>
+  <script src="script.js"></script>
 </body>
 </html>
