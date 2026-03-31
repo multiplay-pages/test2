@@ -1134,3 +1134,55 @@ a {
     flex-direction: row;
   }
 }
+/* ===== UX patch v2 ===== */
+
+/* Pełny obszar klikalny — elementy dekoracyjne nie przechwytują klików */
+.card__top,
+.card__icon,
+.card__badge,
+.card__title,
+.card__desc,
+.type-btn__icon,
+.type-btn__text,
+.type-btn__title,
+.type-btn__desc {
+  pointer-events: none;
+}
+
+/* Lepsza widoczność aktywnego i ukończonego kroku */
+.step-pill {
+  transition:
+    transform 0.16s ease,
+    box-shadow 0.16s ease,
+    border-color 0.16s ease,
+    background 0.16s ease,
+    color 0.16s ease;
+}
+
+.step-pill--done {
+  background: linear-gradient(135deg, rgba(52,168,83,0.1), rgba(52,168,83,0.05));
+  border-color: rgba(52,168,83,0.22);
+  color: var(--text);
+  box-shadow: var(--shadow-xs);
+}
+
+.step-pill--done .step-pill__no {
+  background: linear-gradient(135deg, var(--brand-green), var(--brand-green-dark));
+  color: #fff;
+}
+
+.step-pill--active {
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-sm);
+}
+
+.step-pill--active .step-pill__no {
+  background: linear-gradient(135deg, var(--brand-blue), var(--brand-blue-dark));
+  color: #fff;
+}
+
+/* Delikatnie mocniejszy aktywny stan kart typu sprawy */
+.type-btn[aria-pressed="true"] .type-btn__icon {
+  background: linear-gradient(135deg, rgba(52,168,83,0.18), rgba(47,128,237,0.18));
+  box-shadow: inset 0 0 0 1px rgba(52,168,83,0.12);
+}
