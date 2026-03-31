@@ -1,192 +1,331 @@
 <!DOCTYPE html>
 <html lang="pl">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Procedura potwierdzenia wypowiedzenia — Narzędzie wewnętrzne</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Procedura potwierdzenia otrzymania wypowiedzenia</title>
+  <meta
+    name="description"
+    content="Interaktywna procedura wewnętrzna do obsługi potwierdzenia otrzymania wypowiedzenia — z krokami, terminami i gotowymi szablonami wiadomości."
+  />
 
-  <!-- Fonts -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap" rel="stylesheet">
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Inter:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap"
+    rel="stylesheet"
+  />
 
-  <!-- Styles -->
-  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
+  <main class="app-shell" role="main">
+    <!-- HERO -->
+    <section class="hero">
+      <div class="hero__bg"></div>
 
-<main class="app" role="main">
+      <div class="hero__inner">
+        <div class="hero__eyebrow">Narzędzie wewnętrzne BOK</div>
 
-  <!-- ── Header ── -->
-  <header class="app-header">
-    <h1 class="app-header__title">Procedura potwierdzenia otrzymania wypowiedzenia</h1>
-    <p class="app-header__subtitle">Wybierz sposób otrzymania wypowiedzenia, wariant kontaktu i typ umowy, aby zobaczyć wymaganą procedurę i gotowy szablon wiadomości.</p>
-  </header>
+        <h1 class="hero__title">
+          Procedura potwierdzenia
+          <span>otrzymania wypowiedzenia</span>
+        </h1>
 
-  <!-- ── Level 1: Method of receipt ── -->
-  <section aria-label="Sposób otrzymania wypowiedzenia">
-    <div class="section-label">
-      <span class="section-label__text">Krok 1 — Sposób otrzymania</span>
-      <span class="section-label__line"></span>
-    </div>
+        <p class="hero__subtitle">
+          Wybierz sposób otrzymania wypowiedzenia, wariant kontaktu i typ sprawy,
+          aby szybko zobaczyć właściwą procedurę, termin działania oraz gotowy
+          szablon wiadomości do klienta.
+        </p>
 
-    <div class="card-row" id="level1-row" role="group" aria-label="Wybór sposobu otrzymania">
-      <button type="button" class="card card--email" data-key="email" aria-pressed="false">
-        <span class="card__icon">📧</span>
-        <span class="card__title">Na e-mail</span>
-      </button>
-      <button type="button" class="card card--poczta" data-key="poczta" aria-pressed="false">
-        <span class="card__icon">📬</span>
-        <span class="card__title">Poczta Polska</span>
-      </button>
-      <button type="button" class="card card--bok" data-key="bok" aria-pressed="false">
-        <span class="card__icon">👨‍💼</span>
-        <span class="card__title">Osobiście w BOK</span>
-      </button>
-    </div>
-  </section>
-
-  <!-- Connector 1 -->
-  <div class="connector is-hidden" id="conn1" aria-hidden="true">
-    <div class="connector__line"></div>
-  </div>
-
-  <!-- ── Level 2: Contact variant ── -->
-  <section aria-label="Wariant kontaktu">
-    <div class="section-label is-hidden" id="level2-label">
-      <span class="section-label__text">Krok 2 — Wariant kontaktu</span>
-      <span class="section-label__line"></span>
-    </div>
-
-    <div class="card-row is-hidden" id="level2-row" role="group" aria-label="Wybór wariantu kontaktu">
-      <!-- Dynamically populated by script.js -->
-    </div>
-  </section>
-
-  <!-- Connector 2 -->
-  <div class="connector is-hidden" id="conn2" aria-hidden="true">
-    <div class="connector__line"></div>
-  </div>
-
-  <!-- ── Result panel ── -->
-  <section class="result is-hidden" id="result-wrap" aria-label="Wynik procedury" aria-live="polite">
-
-    <h2 class="result__heading">Wymagana procedura</h2>
-
-    <div class="result__meta">
-      <div class="meta-box">
-        <div class="meta-box__label">Metoda potwierdzenia</div>
-        <div class="meta-box__value" id="res-method"></div>
+        <div class="hero__chips" aria-label="Najważniejsze korzyści">
+          <div class="hero-chip">Szybciej</div>
+          <div class="hero-chip">Czytelniej</div>
+          <div class="hero-chip">Mniej pomyłek</div>
+        </div>
       </div>
-      <div class="meta-box">
-        <div class="meta-box__label">Termin wysyłki</div>
-        <div class="meta-box__value" id="res-deadline"></div>
+    </section>
+
+    <!-- INTRO CARDS -->
+    <section class="intro-grid" aria-label="Skrót działania">
+      <article class="intro-card">
+        <div class="intro-card__icon">🧭</div>
+        <div class="intro-card__title">Prowadzenie krok po kroku</div>
+        <div class="intro-card__text">
+          Narzędzie przeprowadza przez kolejne decyzje w prostym układzie.
+        </div>
+      </article>
+
+      <article class="intro-card">
+        <div class="intro-card__icon">⏱️</div>
+        <div class="intro-card__title">Termin potwierdzenia</div>
+        <div class="intro-card__text">
+          Od razu widzisz metodę działania i wymagany czas reakcji.
+        </div>
+      </article>
+
+      <article class="intro-card">
+        <div class="intro-card__icon">✉️</div>
+        <div class="intro-card__title">Gotowe szablony</div>
+        <div class="intro-card__text">
+          Po wyborze typu sprawy dostajesz gotowy tekst do użycia.
+        </div>
+      </article>
+    </section>
+
+    <!-- WIZARD -->
+    <section class="wizard">
+      <div class="wizard__top">
+        <div class="wizard__eyebrow">Interaktywny kreator</div>
+        <h2 class="wizard__title">Wybierz ścieżkę procedury</h2>
+        <p class="wizard__subtitle">
+          Przejdź przez 3 kroki. Po każdej decyzji narzędzie pokaże właściwy wynik.
+        </p>
       </div>
-    </div>
 
-    <div class="result__desc" id="res-desc"></div>
+      <!-- STEP STRIP -->
+      <div class="step-strip" aria-label="Etapy procedury">
+        <div class="step-pill step-pill--active">
+          <span class="step-pill__no">1</span>
+          <span class="step-pill__label">Sposób otrzymania</span>
+        </div>
+        <div class="step-strip__line"></div>
+        <div class="step-pill">
+          <span class="step-pill__no">2</span>
+          <span class="step-pill__label">Wariant kontaktu</span>
+        </div>
+        <div class="step-strip__line"></div>
+        <div class="step-pill">
+          <span class="step-pill__no">3</span>
+          <span class="step-pill__label">Typ sprawy</span>
+        </div>
+      </div>
 
-    <h3 class="result__steps-heading">Kroki procedury</h3>
-    <ol class="steps-list" id="steps-list">
-      <!-- Dynamically populated -->
-    </ol>
+      <!-- STEP 1 -->
+      <section class="wizard-section" aria-label="Sposób otrzymania wypowiedzenia">
+        <div class="section-head">
+          <div class="section-head__kicker">Krok 1</div>
+          <h3 class="section-head__title">W jaki sposób otrzymano wypowiedzenie?</h3>
+          <p class="section-head__desc">
+            Wybierz kanał, którym do firmy dotarło wypowiedzenie klienta.
+          </p>
+        </div>
 
-    <!-- Contract type selection -->
-    <div class="divider"></div>
-    <h3 class="type-heading">Krok 3 — Wybierz typ sprawy</h3>
+        <div class="card-row card-row--primary" id="level1-row" role="group" aria-label="Wybór sposobu otrzymania">
+          <button type="button" class="card card--email" data-key="email" aria-pressed="false">
+            <span class="card__top">
+              <span class="card__icon">📧</span>
+              <span class="card__badge">Kanał elektroniczny</span>
+            </span>
+            <span class="card__title">Na e-mail</span>
+            <span class="card__desc">Wypowiedzenie wpłynęło wiadomością e-mail.</span>
+          </button>
 
-    <div class="type-row" id="type-btns" role="group" aria-label="Wybór typu sprawy">
-      <button type="button" class="type-btn" data-type="zaleglosc" aria-pressed="false">
-        <span class="type-btn__icon">💰</span>
-        <span>Zaległość na koncie</span>
-      </button>
-      <button type="button" class="type-btn" data-type="nadplata" aria-pressed="false">
-        <span class="type-btn__icon">💸</span>
-        <span>Nadpłata na koncie</span>
-      </button>
-      <button type="button" class="type-btn" data-type="zerwanie" aria-pressed="false">
-        <span class="type-btn__icon">⚠️</span>
-        <span>Zerwanie umowy</span>
-      </button>
-    </div>
+          <button type="button" class="card card--poczta" data-key="poczta" aria-pressed="false">
+            <span class="card__top">
+              <span class="card__icon">📬</span>
+              <span class="card__badge">Kanał tradycyjny</span>
+            </span>
+            <span class="card__title">Poczta Polska</span>
+            <span class="card__desc">Dokument został dostarczony listownie.</span>
+          </button>
 
-    <!-- Template area -->
-    <div class="template is-hidden" id="template-area">
-      <div class="divider"></div>
-      <div class="template__header">
-        <h4 class="template__title" id="template-title">Szablon wiadomości</h4>
-        <button type="button" class="btn-copy" id="copy-btn">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <rect x="9" y="9" width="13" height="13" rx="2"/>
-            <path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/>
+          <button type="button" class="card card--bok" data-key="bok" aria-pressed="false">
+            <span class="card__top">
+              <span class="card__icon">👨‍💼</span>
+              <span class="card__badge">Kontakt bezpośredni</span>
+            </span>
+            <span class="card__title">Osobiście w BOK</span>
+            <span class="card__desc">Klient złożył wypowiedzenie podczas wizyty.</span>
+          </button>
+        </div>
+      </section>
+
+      <!-- CONNECTOR 1 -->
+      <div class="connector is-hidden" id="conn1" aria-hidden="true">
+        <div class="connector__line"></div>
+      </div>
+
+      <!-- STEP 2 -->
+      <section class="wizard-section" aria-label="Wariant kontaktu">
+        <div class="section-head is-hidden" id="level2-label">
+          <div class="section-head__kicker">Krok 2</div>
+          <h3 class="section-head__title">Wybierz wariant kontaktu</h3>
+          <p class="section-head__desc">
+            Poniżej pojawią się dostępne warianty zależne od wybranego sposobu otrzymania.
+          </p>
+        </div>
+
+        <div class="card-row is-hidden" id="level2-row" role="group" aria-label="Wybór wariantu kontaktu">
+          <!-- Dynamically populated by script.js -->
+        </div>
+      </section>
+
+      <!-- CONNECTOR 2 -->
+      <div class="connector is-hidden" id="conn2" aria-hidden="true">
+        <div class="connector__line connector__line--strong"></div>
+      </div>
+
+      <!-- RESULT -->
+      <section class="result is-hidden" id="result-wrap" aria-label="Wynik procedury" aria-live="polite">
+        <div class="result__hero">
+          <div class="result__hero-left">
+            <div class="result__eyebrow">Wynik procedury</div>
+            <h2 class="result__heading">Wymagana procedura działania</h2>
+            <p class="result__lead">
+              Poniżej widzisz właściwą metodę potwierdzenia, termin oraz szczegółowe kroki do wykonania.
+            </p>
+          </div>
+
+          <div class="result__hero-mark">
+            <span>✓</span>
+          </div>
+        </div>
+
+        <div class="result__meta">
+          <div class="meta-box">
+            <div class="meta-box__label">Metoda potwierdzenia</div>
+            <div class="meta-box__value" id="res-method"></div>
+          </div>
+
+          <div class="meta-box meta-box--accent">
+            <div class="meta-box__label">Termin wysyłki</div>
+            <div class="meta-box__value" id="res-deadline"></div>
+          </div>
+        </div>
+
+        <div class="result__desc" id="res-desc"></div>
+
+        <div class="result__steps-wrap">
+          <h3 class="result__steps-heading">Kroki procedury</h3>
+          <ol class="steps-list" id="steps-list"></ol>
+        </div>
+
+        <div class="divider"></div>
+
+        <div class="type-section">
+          <div class="section-head section-head--compact">
+            <div class="section-head__kicker">Krok 3</div>
+            <h3 class="section-head__title">Wybierz typ sprawy</h3>
+            <p class="section-head__desc">
+              Po wyborze pokażemy gotowy szablon wiadomości dopasowany do sytuacji.
+            </p>
+          </div>
+
+          <div class="type-row" id="type-btns" role="group" aria-label="Wybór typu sprawy">
+            <button type="button" class="type-btn" data-type="zaleglosc" aria-pressed="false">
+              <span class="type-btn__icon">💰</span>
+              <span class="type-btn__text">
+                <span class="type-btn__title">Zaległość na koncie</span>
+                <span class="type-btn__desc">Wariant z zaległością klienta</span>
+              </span>
+            </button>
+
+            <button type="button" class="type-btn" data-type="nadplata" aria-pressed="false">
+              <span class="type-btn__icon">💸</span>
+              <span class="type-btn__text">
+                <span class="type-btn__title">Nadpłata na koncie</span>
+                <span class="type-btn__desc">Wariant z nadpłatą klienta</span>
+              </span>
+            </button>
+
+            <button type="button" class="type-btn" data-type="zerwanie" aria-pressed="false">
+              <span class="type-btn__icon">⚠️</span>
+              <span class="type-btn__text">
+                <span class="type-btn__title">Zerwanie umowy</span>
+                <span class="type-btn__desc">Wariant z opłatą za zerwanie</span>
+              </span>
+            </button>
+          </div>
+        </div>
+
+        <div class="template is-hidden" id="template-area">
+          <div class="divider"></div>
+
+          <div class="template__header">
+            <div>
+              <div class="template__eyebrow">Gotowy tekst</div>
+              <h4 class="template__title" id="template-title">Szablon wiadomości</h4>
+            </div>
+
+            <button type="button" class="btn-copy" id="copy-btn">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <rect x="9" y="9" width="13" height="13" rx="2"></rect>
+                <path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"></path>
+              </svg>
+              <span id="copy-label">Kopiuj tekst</span>
+            </button>
+          </div>
+
+          <pre class="template__content" id="template-content"></pre>
+        </div>
+      </section>
+
+      <div class="btn-reset-wrap is-hidden" id="reset-wrap">
+        <button type="button" class="btn-reset" id="reset-btn">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M3 12a9 9 0 019-9 9.75 9.75 0 016.74 2.74L21 8"></path>
+            <path d="M21 3v5h-5"></path>
+            <path d="M21 12a9 9 0 01-9 9 9.75 9.75 0 01-6.74-2.74L3 16"></path>
+            <path d="M3 21v-5h5"></path>
           </svg>
-          <span id="copy-label">Kopiuj tekst</span>
+          Zacznij od nowa
         </button>
       </div>
-      <pre class="template__content" id="template-content"></pre>
-    </div>
-  </section>
+    </section>
 
-  <!-- Reset button -->
-  <div class="btn-reset-wrap is-hidden" id="reset-wrap">
-    <button type="button" class="btn-reset" id="reset-btn">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M3 12a9 9 0 019-9 9.75 9.75 0 016.74 2.74L21 8"/>
-        <path d="M21 3v5h-5"/>
-        <path d="M21 12a9 9 0 01-9 9 9.75 9.75 0 01-6.74-2.74L3 16"/>
-        <path d="M3 21v-5h5"/>
-      </svg>
-      Zacznij od nowa
-    </button>
-  </div>
+    <!-- LEGEND -->
+    <aside class="legend" aria-label="Legenda kolorów">
+      <div class="legend__head">
+        <div>
+          <div class="legend__eyebrow">Pomoc wizualna</div>
+          <h2 class="legend__title">Legenda kolorów i wariantów</h2>
+        </div>
+        <p class="legend__text">
+          Kolory pomagają szybciej rozpoznać typ kanału, sytuację klienta i rodzaj komunikatu.
+        </p>
+      </div>
 
-  <!-- Legend -->
-  <aside class="legend" aria-label="Legenda">
-    <h2 class="legend__title">Legenda</h2>
-    <div class="legend__grid">
-      <div class="legend__item">
-        <div class="legend__swatch" style="background:var(--color-email)"></div>
-        Wypowiedzenie na e-mail
+      <div class="legend__grid">
+        <div class="legend__item">
+          <div class="legend__swatch" style="background:var(--color-email)"></div>
+          Wypowiedzenie na e-mail
+        </div>
+        <div class="legend__item">
+          <div class="legend__swatch" style="background:var(--color-poczta)"></div>
+          Wypowiedzenie Pocztą Polską
+        </div>
+        <div class="legend__item">
+          <div class="legend__swatch" style="background:var(--color-bok)"></div>
+          Wypowiedzenie w BOK
+        </div>
+        <div class="legend__item">
+          <div class="legend__swatch" style="background:var(--color-yellow)"></div>
+          Dane kontaktowe klienta
+        </div>
+        <div class="legend__item">
+          <div class="legend__swatch" style="background:var(--color-orange)"></div>
+          Opcje formularza BOK
+        </div>
+        <div class="legend__item">
+          <div class="legend__swatch" style="background:var(--color-danger-bg); border:1px solid var(--color-danger)"></div>
+          Zaległość na koncie
+        </div>
+        <div class="legend__item">
+          <div class="legend__swatch" style="background:var(--color-success-bg); border:1px solid var(--color-success)"></div>
+          Nadpłata na koncie
+        </div>
+        <div class="legend__item">
+          <div class="legend__swatch" style="background:var(--color-warn-bg); border:1px solid var(--color-warn)"></div>
+          Zerwanie umowy
+        </div>
       </div>
-      <div class="legend__item">
-        <div class="legend__swatch" style="background:var(--color-poczta)"></div>
-        Wypowiedzenie Pocztą Polską
-      </div>
-      <div class="legend__item">
-        <div class="legend__swatch" style="background:var(--color-bok)"></div>
-        Wypowiedzenie w BOK
-      </div>
-      <div class="legend__item">
-        <div class="legend__swatch" style="background:var(--color-yellow)"></div>
-        Dane kontaktowe klienta
-      </div>
-      <div class="legend__item">
-        <div class="legend__swatch" style="background:var(--color-orange)"></div>
-        Opcje formularza BOK
-      </div>
-      <div class="legend__item">
-        <div class="legend__swatch" style="background:var(--color-danger-bg);border:1px solid var(--color-danger)"></div>
-        Zaległość na koncie
-      </div>
-      <div class="legend__item">
-        <div class="legend__swatch" style="background:var(--color-success-bg);border:1px solid var(--color-success)"></div>
-        Nadpłata na koncie
-      </div>
-      <div class="legend__item">
-        <div class="legend__swatch" style="background:var(--color-warn-bg);border:1px solid var(--color-warn)"></div>
-        Zerwanie umowy
-      </div>
-    </div>
-  </aside>
+    </aside>
 
-  <!-- Live region for screen readers -->
-  <div class="sr-only" id="live-region" aria-live="polite" aria-atomic="true"></div>
+    <div class="sr-only" id="live-region" aria-live="polite" aria-atomic="true"></div>
+  </main>
 
-</main>
-
-<!-- Scripts: data first, then logic -->
-<script src="data.js"></script>
-<script src="script.js"></script>
-
+  <script src="data.js"></script>
+  <script src="script.js"></script>
 </body>
 </html>
