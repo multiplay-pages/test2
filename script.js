@@ -125,6 +125,7 @@ function resetCopyButton() {
   if (!dom.copyBtn || !dom.copyLabel) return;
 
   dom.copyBtn.classList.remove("btn-copy--success", "btn-copy--error");
+  dom.copyBtn.disabled = false;
   setText(dom.copyLabel, "Kopiuj tekst");
 }
 
@@ -425,9 +426,10 @@ function handleReset() {
 
 async function handleCopy() {
   const text = dom.templateContent?.textContent?.trim() || "";
-  if (!text) return;
+  if (!text || !dom.copyBtn) return;
 
   clearCopyResetTimeout();
+  dom.copyBtn.disabled = true;
 
   try {
     await navigator.clipboard.writeText(text);
@@ -441,7 +443,7 @@ async function handleCopy() {
   copyResetTimeout = window.setTimeout(() => {
     resetCopyButton();
     copyResetTimeout = null;
-  }, 2200);
+  }, 3000);
 }
 
 /* =========================
